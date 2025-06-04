@@ -1,409 +1,290 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useWalletStore } from '@/stores/wallet';
+import { useState } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { 
-  Building2, 
-  MapPin, 
-  TrendingUp, 
-  Users,
-  Filter,
+  Rocket, 
+  Satellite,
+  Globe,
+  Database,
   Search,
-  Star,
-  Eye,
+  Filter,
   ArrowRight,
+  Users,
   Coins,
+  Calendar,
   Shield,
-  Clock,
-  DollarSign
+  AlertCircle
 } from 'lucide-react';
-import { formatCurrency, formatPercentage } from '@/lib/stellar';
-import Link from 'next/link';
+import { formatCurrency } from '@/lib/stellar';
 
 // Mock marketplace data
-const marketplaceAssets = [
+const MOCK_ASSETS = [
   {
-    id: '1',
-    name: 'Luxury Apartment NYC',
-    location: 'Manhattan, New York',
-    type: 'real_estate',
-    description: 'Premium apartment in Manhattan with high rental yield',
-    totalValue: '2500000',
-    availableTokens: '1000000',
-    pricePerToken: '2.50',
-    projectedYield: '8.5',
-    riskLevel: 'low' as const,
-    status: 'live' as const,
-    images: ['/api/placeholder/400/300'],
-    launchDate: Date.now() - 86400000,
-    investors: 45,
-    contractId: 'CBQAAC4EHNMMHEI2W3QU6UQ5N4KSVYRLVTB5M2XMARCNS4CNLWMX3VQ6'
+    id: 1,
+    name: 'Stellar-1 CubeSat',
+    location: 'Alçak Dünya Yörüngesi',
+    type: 'CubeSat',
+    description: '6U CubeSat, uzaktan algılama ve görüntüleme yetenekleri',
+    totalValue: 2500000,
+    availableTokens: 750000,
+    pricePerToken: 2.50,
+    projectedYield: 8.5,
+    riskLevel: 'Orta',
+    status: 'Aktif',
+    images: ['/assets/satellite1.jpg'],
+    launchDate: '2024-12-15',
+    investors: 45
   },
   {
-    id: '2',
-    name: 'Downtown Office Building',
-    location: 'Chicago, Illinois',
-    type: 'real_estate',
-    description: 'Class A commercial office space in downtown Chicago',
-    totalValue: '5000000',
-    availableTokens: '2000000',
-    pricePerToken: '2.50',
-    projectedYield: '9.2',
-    riskLevel: 'medium' as const,
-    status: 'upcoming' as const,
-    images: ['/api/placeholder/400/300'],
-    launchDate: Date.now() + 2592000000, // 30 days from now
-    investors: 0,
-    contractId: null
+    id: 2,
+    name: 'Orbital-1 NanoSat',
+    location: 'Orta Dünya Yörüngesi',
+    type: 'NanoSat',
+    description: 'İletişim odaklı nano uydu sistemi',
+    totalValue: 5000000,
+    availableTokens: 2000000,
+    pricePerToken: 5.00,
+    projectedYield: 9.2,
+    riskLevel: 'Yüksek',
+    status: 'Yakında',
+    images: ['/assets/satellite2.jpg'],
+    launchDate: '2025-03-01',
+    investors: 28
   },
   {
-    id: '3',
-    name: 'Gold Storage Facility',
-    location: 'Delaware, USA',
-    type: 'commodities',
-    description: 'Secure precious metals storage and trading facility',
-    totalValue: '3000000',
-    availableTokens: '1500000',
-    pricePerToken: '2.00',
-    projectedYield: '6.8',
-    riskLevel: 'low' as const,
-    status: 'upcoming' as const,
-    images: ['/api/placeholder/400/300'],
-    launchDate: Date.now() + 5184000000, // 60 days from now
-    investors: 0,
-    contractId: null
+    id: 3,
+    name: 'Ground Station Alpha',
+    location: 'İstanbul, Türkiye',
+    type: 'Yer İstasyonu',
+    description: 'Tam donanımlı uydu kontrol ve veri alım istasyonu',
+    totalValue: 3000000,
+    availableTokens: 1500000,
+    pricePerToken: 3.00,
+    projectedYield: 6.8,
+    riskLevel: 'Düşük',
+    status: 'Aktif',
+    images: ['/assets/ground-station.jpg'],
+    launchDate: '2024-09-01',
+    investors: 62
   },
   {
-    id: '4',
-    name: 'Renewable Energy Farm',
-    location: 'Texas, USA',
-    type: 'infrastructure',
-    description: 'Solar energy farm with long-term government contracts',
-    totalValue: '8000000',
-    availableTokens: '4000000',
-    pricePerToken: '2.00',
-    projectedYield: '7.5',
-    riskLevel: 'medium' as const,
-    status: 'upcoming' as const,
-    images: ['/api/placeholder/400/300'],
-    launchDate: Date.now() + 7776000000, // 90 days from now
-    investors: 0,
-    contractId: null
+    id: 4,
+    name: 'Deep Space Research',
+    location: 'Derin Uzay',
+    type: 'Ar-Ge Projesi',
+    description: 'Mars keşif ve asteroid madenciliği araştırma projesi',
+    totalValue: 8000000,
+    availableTokens: 4000000,
+    pricePerToken: 8.00,
+    projectedYield: 7.5,
+    riskLevel: 'Çok Yüksek',
+    status: 'Yakında',
+    images: ['/assets/deep-space.jpg'],
+    launchDate: '2025-06-15',
+    investors: 15
   }
 ];
 
+const ASSET_TYPES = [
+  'Tüm Varlıklar',
+  'CubeSat',
+  'NanoSat',
+  'Yer İstasyonu',
+  'Ar-Ge Projesi'
+];
+
+const STATUS_TYPES = [
+  'Tüm Durumlar',
+  'Aktif',
+  'Yakında',
+  'Satıldı'
+];
+
 export default function MarketplacePage() {
-  const { isConnected } = useWalletStore();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedType, setSelectedType] = useState<string>('all');
-  const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [selectedType, setSelectedType] = useState('Tüm Varlıklar');
+  const [selectedStatus, setSelectedStatus] = useState('Tüm Durumlar');
 
-  const assetTypes = [
-    { value: 'all', label: 'All Assets' },
-    { value: 'real_estate', label: 'Real Estate' },
-    { value: 'commodities', label: 'Commodities' },
-    { value: 'infrastructure', label: 'Infrastructure' }
-  ];
-
-  const statusTypes = [
-    { value: 'all', label: 'All Status' },
-    { value: 'live', label: 'Live' },
-    { value: 'upcoming', label: 'Upcoming' },
-    { value: 'sold_out', label: 'Sold Out' }
-  ];
-
-  const filteredAssets = marketplaceAssets.filter(asset => {
+  const filteredAssets = MOCK_ASSETS.filter(asset => {
     const matchesSearch = asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         asset.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = selectedType === 'all' || asset.type === selectedType;
-    const matchesStatus = selectedStatus === 'all' || asset.status === selectedStatus;
-    
+                         asset.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = selectedType === 'Tüm Varlıklar' || asset.type === selectedType;
+    const matchesStatus = selectedStatus === 'Tüm Durumlar' || asset.status === selectedStatus;
     return matchesSearch && matchesType && matchesStatus;
   });
-
-  const getRiskBadgeVariant = (riskLevel: string) => {
-    switch (riskLevel) {
-      case 'low': return 'default';
-      case 'medium': return 'secondary';
-      case 'high': return 'destructive';
-      default: return 'outline';
-    }
-  };
-
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'live': return 'default';
-      case 'upcoming': return 'secondary';
-      case 'sold_out': return 'outline';
-      default: return 'outline';
-    }
-  };
-
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main className="container mx-auto px-4 py-8">
-        <div className="space-y-8">
-          {/* Page Header */}
+        <div className="max-w-7xl mx-auto space-y-8">
+          {/* Header */}
           <div className="space-y-4">
-            <h1 className="text-4xl font-bold">Asset Marketplace</h1>
+            <h1 className="text-4xl font-bold">Uydu Pazarı</h1>
             <p className="text-xl text-muted-foreground">
-              Discover tokenized real world assets and start investing today
+              Tokenize edilmiş uzay varlıklarını keşfedin ve yatırım yapmaya başlayın
             </p>
           </div>
 
-          {/* Stats Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Assets</CardTitle>
-                <Building2 className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{marketplaceAssets.length}</div>
-                <p className="text-xs text-muted-foreground">Across multiple sectors</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Value</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {formatCurrency(
-                    marketplaceAssets.reduce((sum, asset) => sum + parseFloat(asset.totalValue), 0).toString()
-                  )}
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Toplam Değer</p>
+                    <p className="text-2xl font-bold">{formatCurrency('18500000')}</p>
+                  </div>
+                  <Coins className="h-8 w-8 text-primary" />
                 </div>
-                <p className="text-xs text-muted-foreground">Available for investment</p>
               </CardContent>
             </Card>
-
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Avg. Yield</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">8.0%</div>
-                <p className="text-xs text-muted-foreground">Annual projected return</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Investors</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {marketplaceAssets.reduce((sum, asset) => sum + asset.investors, 0)}
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Aktif Uydular</p>
+                    <p className="text-2xl font-bold">4</p>
+                  </div>
+                  <Satellite className="h-8 w-8 text-primary" />
                 </div>
-                <p className="text-xs text-muted-foreground">Verified participants</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Yatırımcılar</p>
+                    <p className="text-2xl font-bold">150</p>
+                  </div>
+                  <Users className="h-8 w-8 text-primary" />
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Yaklaşan Fırlatmalar</p>
+                    <p className="text-2xl font-bold">2</p>
+                  </div>
+                  <Rocket className="h-8 w-8 text-primary" />
+                </div>
               </CardContent>
             </Card>
           </div>
 
           {/* Filters */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Filter className="h-5 w-5" />
-                Filter Assets
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1">
-                  <div className="relative">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search assets by name or location..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-8"
-                    />
-                  </div>
-                </div>
-                
-                <div className="flex gap-4">
-                  <select 
-                    value={selectedType}
-                    onChange={(e) => setSelectedType(e.target.value)}
-                    className="px-3 py-2 border border-input bg-background rounded-md text-sm"
-                  >
-                    {assetTypes.map(type => (
-                      <option key={type.value} value={type.value}>{type.label}</option>
-                    ))}
-                  </select>
-
-                  <select 
-                    value={selectedStatus}
-                    onChange={(e) => setSelectedStatus(e.target.value)}
-                    className="px-3 py-2 border border-input bg-background rounded-md text-sm"
-                  >
-                    {statusTypes.map(status => (
-                      <option key={status.value} value={status.value}>{status.label}</option>
-                    ))}
-                  </select>
-                </div>
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Uydu ara..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+            <div className="flex gap-4">
+              <div className="relative">
+                <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <select
+                  value={selectedType}
+                  onChange={(e) => setSelectedType(e.target.value)}
+                  className="pl-10 pr-8 py-2 rounded-md border border-input bg-background"
+                >
+                  {ASSET_TYPES.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="relative">
+                <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <select
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  className="pl-10 pr-8 py-2 rounded-md border border-input bg-background"
+                >
+                  {STATUS_TYPES.map(status => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
 
           {/* Asset Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredAssets.map((asset) => (
-              <Card key={asset.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+            {filteredAssets.map(asset => (
+              <Card key={asset.id} className="overflow-hidden">
                 <div className="aspect-video bg-muted relative">
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                  <div className="absolute top-4 right-4 flex gap-2">
-                    <Badge variant={getStatusBadgeVariant(asset.status)}>
-                      {asset.status.toUpperCase()}
-                    </Badge>
-                    <Badge variant={getRiskBadgeVariant(asset.riskLevel)}>
-                      {asset.riskLevel.toUpperCase()} RISK
-                    </Badge>
-                  </div>
-                  <div className="absolute bottom-4 left-4 text-white">
-                    <h3 className="font-bold text-lg">{asset.name}</h3>
-                    <p className="text-sm opacity-90 flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
-                      {asset.location}
-                    </p>
-                  </div>
+                  <img
+                    src={asset.images[0]}
+                    alt={asset.name}
+                    className="object-cover w-full h-full"
+                  />
+                  <Badge 
+                    className="absolute top-4 right-4"
+                    variant={asset.status === 'Aktif' ? 'default' : 'secondary'}
+                  >
+                    {asset.status}
+                  </Badge>
                 </div>
-
-                <CardContent className="p-6 space-y-4">
-                  <p className="text-sm text-muted-foreground line-clamp-2">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <CardTitle>{asset.name}</CardTitle>
+                      <CardDescription>{asset.location}</CardDescription>
+                    </div>
+                    <Badge variant="outline">{asset.type}</Badge>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-4">
                     {asset.description}
                   </p>
-
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-2 gap-4 mb-4">
                     <div>
-                      <p className="text-muted-foreground">Total Value</p>
-                      <p className="font-semibold">{formatCurrency(asset.totalValue)}</p>
+                      <p className="text-sm text-muted-foreground">Token Fiyatı</p>
+                      <p className="font-semibold">{formatCurrency(asset.pricePerToken.toString())}</p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground">Min. Investment</p>
-                      <p className="font-semibold">{formatCurrency((parseFloat(asset.pricePerToken) * 100).toString())}</p>
+                      <p className="text-sm text-muted-foreground">Beklenen Getiri</p>
+                      <p className="font-semibold">%{asset.projectedYield}</p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground">Projected Yield</p>
-                      <p className="font-semibold text-green-600">{formatPercentage(asset.projectedYield)}</p>
+                      <p className="text-sm text-muted-foreground">Risk Seviyesi</p>
+                      <p className="font-semibold">{asset.riskLevel}</p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground">Investors</p>
+                      <p className="text-sm text-muted-foreground">Yatırımcılar</p>
                       <p className="font-semibold">{asset.investors}</p>
                     </div>
                   </div>
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Available Tokens</span>
-                      <span>{(parseFloat(asset.availableTokens) / 1000000).toFixed(1)}M</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        Fırlatma: {asset.launchDate}
+                      </span>
                     </div>
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div 
-                        className="bg-primary h-2 rounded-full" 
-                        style={{ 
-                          width: `${asset.status === 'live' ? Math.random() * 40 + 20 : 0}%` 
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    {asset.status === 'live' && asset.contractId ? (
-                      <Button className="flex-1" asChild>
-                        <Link href="/transfer">
-                          Invest Now
-                          <ArrowRight className="h-4 w-4 ml-2" />
-                        </Link>
-                      </Button>
-                    ) : (
-                      <Button className="flex-1" variant="outline" disabled>
-                        <Clock className="h-4 w-4 mr-2" />
-                        {asset.status === 'upcoming' ? `Launches ${formatDate(asset.launchDate)}` : 'Sold Out'}
-                      </Button>
-                    )}
-                    <Button variant="outline" size="icon">
-                      <Eye className="h-4 w-4" />
+                    <Button>
+                      Detaylar
+                      <ArrowRight className="h-4 w-4 ml-2" />
                     </Button>
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
-
-          {filteredAssets.length === 0 && (
-            <Card className="text-center py-12">
-              <CardContent>
-                <Search className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No assets found</h3>
-                <p className="text-muted-foreground mb-4">
-                  Try adjusting your search criteria or browse all available assets.
-                </p>
-                <Button 
-                  onClick={() => {
-                    setSearchTerm('');
-                    setSelectedType('all');
-                    setSelectedStatus('all');
-                  }}
-                  variant="outline"
-                >
-                  Clear Filters
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Call to Action */}
-          <Card className="bg-primary text-primary-foreground">
-            <CardContent className="p-8 text-center">
-              <h2 className="text-2xl font-bold mb-4">Ready to Start Investing?</h2>
-              <p className="text-lg opacity-90 mb-6">
-                Join hundreds of investors building wealth through tokenized real world assets
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                {!isConnected ? (
-                  <Button size="lg" variant="secondary">
-                    <Shield className="h-5 w-5 mr-2" />
-                    Connect Wallet to Start
-                  </Button>
-                ) : (
-                  <>
-                    <Button size="lg" variant="secondary" asChild>
-                      <Link href="/transfer">
-                        <Coins className="h-5 w-5 mr-2" />
-                        Start Investing
-                      </Link>
-                    </Button>
-                    <Button size="lg" variant="secondary" asChild>
-                      <Link href="/tokenize">
-                        <Building2 className="h-5 w-5 mr-2" />
-                        Tokenize Asset
-                      </Link>
-                    </Button>
-                  </>
-                )}
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </main>
     </div>

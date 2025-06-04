@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "deploy:testnet": "node scripts/deploy-testnet.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -23,6 +24,7 @@
     "lucide-react": "^0.511.0",
     "next": "15.3.3",
     "next-themes": "^0.4.6",
+    "node-fetch": "^3.3.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.56.4",

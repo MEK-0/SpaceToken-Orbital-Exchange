@@ -10,7 +10,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { 
-  Building2, 
+  Rocket, 
+  Satellite,
+  Globe,
   FileText, 
   Shield, 
   Clock,
@@ -19,11 +21,9 @@ import {
   ArrowLeft,
   Upload,
   AlertCircle,
-  DollarSign,
-  Users,
-  Briefcase,
   Coins,
-  Calculator,
+  Briefcase,
+  Database,
   Info
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/stellar';
@@ -32,56 +32,64 @@ import { Progress } from '@/components/ui/progress';
 
 const ASSET_TYPES = [
   {
-    id: 'real_estate',
-    name: 'Real Estate',
-    description: 'Residential, commercial, or industrial properties',
-    icon: Building2,
+    id: 'cubesat',
+    name: 'CubeSat',
+    description: 'Küçük uydu sistemleri ve uzay araçları',
+    icon: Satellite,
     minValue: 100000,
-    examples: ['Apartment buildings', 'Office complexes', 'Warehouses', 'Retail spaces']
+    examples: ['6U CubeSat', '3U CubeSat', 'Uzaktan Algılama', 'İletişim']
   },
   {
-    id: 'commodities',
-    name: 'Commodities',
-    description: 'Physical goods and precious metals',
-    icon: Coins,
+    id: 'nanosat',
+    name: 'NanoSat',
+    description: 'Nano boyutlu uydu sistemleri',
+    icon: Rocket,
     minValue: 50000,
-    examples: ['Gold storage', 'Oil reserves', 'Agricultural products', 'Rare metals']
+    examples: ['İletişim', 'Veri Aktarımı', 'Ar-Ge', 'Test']
   },
   {
-    id: 'infrastructure',
-    name: 'Infrastructure',
-    description: 'Energy, transportation, and utility projects',
-    icon: Briefcase,
+    id: 'ground_station',
+    name: 'Yer İstasyonu',
+    description: 'Uydu kontrol ve veri alım istasyonları',
+    icon: Globe,
     minValue: 500000,
-    examples: ['Solar farms', 'Wind turbines', 'Data centers', 'Transportation hubs']
+    examples: ['Kontrol Merkezi', 'Veri Alım', 'İletişim', 'Takip']
+  },
+  {
+    id: 'research',
+    name: 'Ar-Ge Projesi',
+    description: 'Derin uzay araştırma ve keşif projeleri',
+    icon: Database,
+    minValue: 1000000,
+    examples: ['Derin Uzay', 'Mars Keşif', 'Asteroid Madenciliği', 'Uzay Kolonisi']
   }
 ];
 
 const TOKENIZATION_STEPS = [
   {
     id: 1,
-    title: 'Asset Details',
-    description: 'Provide basic information about your asset'
+    title: 'Uydu Bilgileri',
+    description: 'Uydu veya projenizin temel bilgilerini girin'
   },
   {
     id: 2,
-    title: 'Legal Documentation',
-    description: 'Upload required legal and ownership documents'
+    title: 'Teknik Detaylar',
+    description: 'Teknik özellikler ve sistem detayları'
   },
   {
     id: 3,
-    title: 'Tokenization Structure',
-    description: 'Define token economics and distribution'
+    title: 'Yasal ve Güvenlik',
+    description: 'Uzay lisansları ve güvenlik sertifikaları'
   },
   {
     id: 4,
-    title: 'Compliance Setup',
-    description: 'Configure investor requirements and restrictions'
+    title: 'Finansal Model',
+    description: 'Token ekonomisi ve dağıtım planı'
   },
   {
     id: 5,
-    title: 'Review & Deploy',
-    description: 'Review all details and deploy your token'
+    title: 'Tokenizasyon',
+    description: 'Son kontroller ve token yayınlama'
   }
 ];
 
@@ -89,30 +97,30 @@ export default function TokenizePage() {
   const { isConnected, address } = useWalletStore();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
-    // Step 1: Asset Details
+    // Step 1: Uydu Bilgileri
     assetType: '',
     assetName: '',
-    location: '',
+    orbit: '',
     description: '',
     totalValue: '',
     
-    // Step 2: Legal Documentation
-    ownershipProof: null as File | null,
-    valuation: null as File | null,
-    insurance: null as File | null,
+    // Step 2: Teknik Detaylar
+    technicalSpecs: null as File | null,
+    systemDesign: null as File | null,
+    testResults: null as File | null,
     
-    // Step 3: Tokenization Structure
+    // Step 3: Yasal ve Güvenlik
+    launchLicense: null as File | null,
+    frequencyLicense: null as File | null,
+    safetyCert: null as File | null,
+    
+    // Step 4: Finansal Model
     tokenSymbol: '',
     totalSupply: '',
     pricePerToken: '',
     minInvestment: '',
     
-    // Step 4: Compliance
-    kycRequired: true,
-    accreditedOnly: false,
-    jurisdictionRestrictions: '',
-    
-    // Step 5: Launch settings
+    // Step 5: Tokenizasyon
     launchDate: '',
     fundingGoal: '',
     fundingDeadline: ''
@@ -154,8 +162,8 @@ export default function TokenizePage() {
         return (
           <div className="space-y-6">
             <div>
-              <Label className="text-base font-semibold mb-4 block">Asset Type</Label>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Label className="text-base font-semibold mb-4 block">Uydu Tipi</Label>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {ASSET_TYPES.map((type) => {
                   const Icon = type.icon;
                   return (
@@ -182,30 +190,30 @@ export default function TokenizePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="assetName">Asset Name</Label>
+                <Label htmlFor="assetName">Uydu Adı</Label>
                 <Input
                   id="assetName"
-                  placeholder="e.g., Luxury Apartment NYC"
+                  placeholder="örn: Stellar-1 CubeSat"
                   value={formData.assetName}
                   onChange={(e) => updateFormData('assetName', e.target.value)}
                 />
               </div>
               <div>
-                <Label htmlFor="location">Location</Label>
+                <Label htmlFor="orbit">Yörünge</Label>
                 <Input
-                  id="location"
-                  placeholder="e.g., Manhattan, New York"
-                  value={formData.location}
-                  onChange={(e) => updateFormData('location', e.target.value)}
+                  id="orbit"
+                  placeholder="örn: Alçak Dünya Yörüngesi"
+                  value={formData.orbit}
+                  onChange={(e) => updateFormData('orbit', e.target.value)}
                 />
               </div>
             </div>
 
             <div>
-              <Label htmlFor="description">Asset Description</Label>
+              <Label htmlFor="description">Uydu Açıklaması</Label>
               <Textarea
                 id="description"
-                placeholder="Detailed description of your asset, its features, and investment potential..."
+                placeholder="Uydunuzun detaylı açıklaması, özellikleri ve yatırım potansiyeli..."
                 value={formData.description}
                 onChange={(e) => updateFormData('description', e.target.value)}
                 className="min-h-24"
@@ -213,7 +221,7 @@ export default function TokenizePage() {
             </div>
 
             <div>
-              <Label htmlFor="totalValue">Total Asset Value (USD)</Label>
+              <Label htmlFor="totalValue">Toplam Değer (USD)</Label>
               <Input
                 id="totalValue"
                 type="number"
@@ -222,7 +230,7 @@ export default function TokenizePage() {
                 onChange={(e) => updateFormData('totalValue', e.target.value)}
               />
               <p className="text-sm text-muted-foreground mt-1">
-                Based on professional appraisal or market valuation
+                Profesyonel değerleme veya piyasa değeri baz alınarak
               </p>
             </div>
           </div>
@@ -234,7 +242,7 @@ export default function TokenizePage() {
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription>
-                All documents must be notarized and verified by our legal team before tokenization approval.
+                Tüm teknik dokümanlar uzman ekibimiz tarafından incelenecektir.
               </AlertDescription>
             </Alert>
 
@@ -243,18 +251,20 @@ export default function TokenizePage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <FileText className="h-5 w-5" />
-                    Ownership Proof
+                    Teknik Özellikler
                   </CardTitle>
                   <CardDescription>
-                    Property deed, title, or ownership certificate
+                    Uydu sistemleri ve bileşenlerinin teknik detayları
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+                  <div className="border-2 border-dashed rounded-lg p-6 text-center">
                     <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground mb-2">Upload PDF or image</p>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      PDF veya DOCX formatında teknik döküman yükleyin
+                    </p>
                     <Button variant="outline" size="sm">
-                      Choose File
+                      Dosya Seç
                     </Button>
                   </div>
                 </CardContent>
@@ -263,61 +273,21 @@ export default function TokenizePage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Calculator className="h-5 w-5" />
-                    Professional Valuation
+                    <FileText className="h-5 w-5" />
+                    Sistem Tasarımı
                   </CardTitle>
                   <CardDescription>
-                    Official appraisal from certified assessor
+                    Uydu sisteminin mimari ve tasarım dokümanları
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+                  <div className="border-2 border-dashed rounded-lg p-6 text-center">
                     <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground mb-2">Upload appraisal report</p>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Sistem tasarım ve mimari dokümanları
+                    </p>
                     <Button variant="outline" size="sm">
-                      Choose File
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5" />
-                    Insurance Documentation
-                  </CardTitle>
-                  <CardDescription>
-                    Current insurance policy and coverage details
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
-                    <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground mb-2">Upload insurance policy</p>
-                    <Button variant="outline" size="sm">
-                      Choose File
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Briefcase className="h-5 w-5" />
-                    Additional Documents
-                  </CardTitle>
-                  <CardDescription>
-                    Any other relevant legal or financial documents
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
-                    <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground mb-2">Optional documents</p>
-                    <Button variant="outline" size="sm">
-                      Choose Files
+                      Dosya Seç
                     </Button>
                   </div>
                 </CardContent>
@@ -327,25 +297,80 @@ export default function TokenizePage() {
         );
 
       case 3:
-        const tokenomics = calculateTokenomics();
+        return (
+          <div className="space-y-6">
+            <Alert>
+              <Shield className="h-4 w-4" />
+              <AlertDescription>
+                Uzay lisansları ve güvenlik sertifikaları zorunludur
+              </AlertDescription>
+            </Alert>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Fırlatma Lisansı
+                  </CardTitle>
+                  <CardDescription>
+                    Uydu fırlatma izinleri ve lisansları
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="border-2 border-dashed rounded-lg p-6 text-center">
+                    <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Fırlatma lisansı ve izinleri
+                    </p>
+                    <Button variant="outline" size="sm">
+                      Dosya Seç
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Frekans Lisansı
+                  </CardTitle>
+                  <CardDescription>
+                    İletişim frekansları ve spektrum izinleri
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="border-2 border-dashed rounded-lg p-6 text-center">
+                    <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Frekans lisansı ve izinleri
+                    </p>
+                    <Button variant="outline" size="sm">
+                      Dosya Seç
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        );
+
+      case 4:
         return (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="tokenSymbol">Token Symbol</Label>
+                <Label htmlFor="tokenSymbol">Token Sembolü</Label>
                 <Input
                   id="tokenSymbol"
-                  placeholder="e.g., LAPT"
+                  placeholder="örn: STL1"
                   value={formData.tokenSymbol}
-                  onChange={(e) => updateFormData('tokenSymbol', e.target.value.toUpperCase())}
-                  maxLength={5}
+                  onChange={(e) => updateFormData('tokenSymbol', e.target.value)}
                 />
-                <p className="text-sm text-muted-foreground mt-1">
-                  3-5 character unique identifier
-                </p>
               </div>
               <div>
-                <Label htmlFor="totalSupply">Total Token Supply</Label>
+                <Label htmlFor="totalSupply">Toplam Token Arzı</Label>
                 <Input
                   id="totalSupply"
                   type="number"
@@ -356,126 +381,52 @@ export default function TokenizePage() {
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="minInvestment">Minimum Investment (USD)</Label>
-              <Input
-                id="minInvestment"
-                type="number"
-                placeholder="250"
-                value={formData.minInvestment}
-                onChange={(e) => updateFormData('minInvestment', e.target.value)}
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="pricePerToken">Token Fiyatı (USD)</Label>
+                <Input
+                  id="pricePerToken"
+                  type="number"
+                  placeholder="2.50"
+                  value={formData.pricePerToken}
+                  onChange={(e) => updateFormData('pricePerToken', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="minInvestment">Minimum Yatırım (USD)</Label>
+                <Input
+                  id="minInvestment"
+                  type="number"
+                  placeholder="1000"
+                  value={formData.minInvestment}
+                  onChange={(e) => updateFormData('minInvestment', e.target.value)}
+                />
+              </div>
             </div>
 
-            {tokenomics && (
-              <Card className="bg-muted/50">
+            {calculateTokenomics() && (
+              <Card>
                 <CardHeader>
-                  <CardTitle>Calculated Tokenomics</CardTitle>
+                  <CardTitle>Token Ekonomisi Özeti</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <p className="text-sm text-muted-foreground">Price Per Token</p>
-                      <p className="text-2xl font-bold">${tokenomics.pricePerToken}</p>
+                      <p className="text-sm text-muted-foreground">Token Fiyatı</p>
+                      <p className="text-lg font-bold">{formatCurrency(calculateTokenomics()!.pricePerToken)}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Market Cap</p>
-                      <p className="text-2xl font-bold">{formatCurrency(tokenomics.marketCap.toString())}</p>
+                      <p className="text-sm text-muted-foreground">Piyasa Değeri</p>
+                      <p className="text-lg font-bold">{formatCurrency(calculateTokenomics()!.marketCap.toString())}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Min Investment Tokens</p>
-                      <p className="text-2xl font-bold">{tokenomics.minInvestmentTokens.toLocaleString()}</p>
+                      <p className="text-sm text-muted-foreground">Min. Token</p>
+                      <p className="text-lg font-bold">{calculateTokenomics()!.minInvestmentTokens}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label htmlFor="fundingGoal">Funding Goal (USD)</Label>
-                <Input
-                  id="fundingGoal"
-                  type="number"
-                  placeholder="1000000"
-                  value={formData.fundingGoal}
-                  onChange={(e) => updateFormData('fundingGoal', e.target.value)}
-                />
-                <p className="text-sm text-muted-foreground mt-1">
-                  Target amount to raise from investors
-                </p>
-              </div>
-              <div>
-                <Label htmlFor="fundingDeadline">Funding Deadline</Label>
-                <Input
-                  id="fundingDeadline"
-                  type="date"
-                  value={formData.fundingDeadline}
-                  onChange={(e) => updateFormData('fundingDeadline', e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-        );
-
-      case 4:
-        return (
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Investor Requirements</CardTitle>
-                <CardDescription>
-                  Set compliance requirements for token holders
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>KYC Verification Required</Label>
-                    <p className="text-sm text-muted-foreground">All investors must complete identity verification</p>
-                  </div>
-                  <Button
-                    variant={formData.kycRequired ? "default" : "outline"}
-                    onClick={() => updateFormData('kycRequired', !formData.kycRequired)}
-                  >
-                    {formData.kycRequired ? 'Required' : 'Optional'}
-                  </Button>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Accredited Investors Only</Label>
-                    <p className="text-sm text-muted-foreground">Restrict to accredited investors (higher income/net worth)</p>
-                  </div>
-                  <Button
-                    variant={formData.accreditedOnly ? "default" : "outline"}
-                    onClick={() => updateFormData('accreditedOnly', !formData.accreditedOnly)}
-                  >
-                    {formData.accreditedOnly ? 'Required' : 'Open to All'}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <div>
-              <Label htmlFor="jurisdictionRestrictions">Jurisdiction Restrictions</Label>
-              <Textarea
-                id="jurisdictionRestrictions"
-                placeholder="e.g., US residents only, excluding OFAC sanctioned countries..."
-                value={formData.jurisdictionRestrictions}
-                onChange={(e) => updateFormData('jurisdictionRestrictions', e.target.value)}
-              />
-              <p className="text-sm text-muted-foreground mt-1">
-                Specify any geographic restrictions for token holders
-              </p>
-            </div>
-
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                Our legal team will review these settings to ensure regulatory compliance in relevant jurisdictions.
-              </AlertDescription>
-            </Alert>
           </div>
         );
 
@@ -483,76 +434,79 @@ export default function TokenizePage() {
         return (
           <div className="space-y-6">
             <Alert>
-              <Check className="h-4 w-4" />
+              <Clock className="h-4 w-4" />
               <AlertDescription>
-                Review all information carefully. Once deployed, some settings cannot be changed.
+                Tokenizasyon tarihlerini ve hedeflerini belirleyin
               </AlertDescription>
             </Alert>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Asset Information</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
+              <div>
+                <Label htmlFor="launchDate">Fırlatma Tarihi</Label>
+                <Input
+                  id="launchDate"
+                  type="date"
+                  value={formData.launchDate}
+                  onChange={(e) => updateFormData('launchDate', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="fundingGoal">Finansman Hedefi (USD)</Label>
+                <Input
+                  id="fundingGoal"
+                  type="number"
+                  placeholder="1000000"
+                  value={formData.fundingGoal}
+                  onChange={(e) => updateFormData('fundingGoal', e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="fundingDeadline">Finansman Son Tarihi</Label>
+              <Input
+                id="fundingDeadline"
+                type="date"
+                value={formData.fundingDeadline}
+                onChange={(e) => updateFormData('fundingDeadline', e.target.value)}
+              />
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Tokenizasyon Özeti</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Name:</span>
-                    <span className="font-medium">{formData.assetName}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Type:</span>
+                    <span className="text-muted-foreground">Uydu Tipi</span>
                     <span className="font-medium">{ASSET_TYPES.find(t => t.id === formData.assetType)?.name}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Location:</span>
-                    <span className="font-medium">{formData.location}</span>
+                    <span className="text-muted-foreground">Uydu Adı</span>
+                    <span className="font-medium">{formData.assetName}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Total Value:</span>
-                    <span className="font-medium">{formatCurrency(formData.totalValue)}</span>
+                    <span className="text-muted-foreground">Yörünge</span>
+                    <span className="font-medium">{formData.orbit}</span>
                   </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Token Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Symbol:</span>
+                    <span className="text-muted-foreground">Token Sembolü</span>
                     <span className="font-medium">{formData.tokenSymbol}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Total Supply:</span>
-                    <span className="font-medium">{parseFloat(formData.totalSupply).toLocaleString()}</span>
+                    <span className="text-muted-foreground">Toplam Arz</span>
+                    <span className="font-medium">{formData.totalSupply}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Price per Token:</span>
-                    <span className="font-medium">${calculateTokenomics()?.pricePerToken}</span>
+                    <span className="text-muted-foreground">Token Fiyatı</span>
+                    <span className="font-medium">{formatCurrency(formData.pricePerToken)}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Min Investment:</span>
-                    <span className="font-medium">{formatCurrency(formData.minInvestment)}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <Card className="bg-primary text-primary-foreground">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-2">Deployment Cost</h3>
-                <div className="text-3xl font-bold mb-2">$2,500 USD</div>
-                <p className="text-sm opacity-90">
-                  Includes smart contract deployment, legal review, compliance setup, and ongoing platform fees for the first year.
-                </p>
+                </div>
               </CardContent>
             </Card>
           </div>
         );
-
-      default:
-        return null;
     }
   };
 
@@ -581,74 +535,66 @@ export default function TokenizePage() {
       <Header />
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto space-y-8">
-          {/* Header */}
-          <div className="text-center space-y-4">
-            <h1 className="text-4xl font-bold">Asset Tokenization</h1>
+          <div className="space-y-4">
+            <h1 className="text-4xl font-bold">Uydu Tokenize Et</h1>
             <p className="text-xl text-muted-foreground">
-              Transform your real world asset into tradeable tokens
+              Uydu veya uzay projenizi tokenize edin ve yatırımcılarla buluşturun
             </p>
           </div>
 
-          {/* Progress Steps */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                {TOKENIZATION_STEPS.map((step, index) => (
-                  <div key={step.id} className="flex items-center">
-                    <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold ${
-                      currentStep >= step.id 
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              {TOKENIZATION_STEPS.map((step, index) => (
+                <div key={step.id} className="flex items-center">
+                  <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
+                    currentStep > step.id 
+                      ? 'bg-primary text-primary-foreground' 
+                      : currentStep === step.id 
                         ? 'bg-primary text-primary-foreground' 
                         : 'bg-muted text-muted-foreground'
-                    }`}>
-                      {currentStep > step.id ? <Check className="h-4 w-4" /> : step.id}
-                    </div>
-                    {index < TOKENIZATION_STEPS.length - 1 && (
-                      <div className={`w-16 h-0.5 mx-2 ${
-                        currentStep > step.id ? 'bg-primary' : 'bg-muted'
-                      }`} />
-                    )}
+                  }`}>
+                    {currentStep > step.id ? <Check className="h-4 w-4" /> : step.id}
                   </div>
-                ))}
-              </div>
-              <Progress value={(currentStep / TOKENIZATION_STEPS.length) * 100} className="mb-2" />
-              <div className="text-center">
-                <h3 className="font-semibold">{TOKENIZATION_STEPS[currentStep - 1].title}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {TOKENIZATION_STEPS[currentStep - 1].description}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+                  {index < TOKENIZATION_STEPS.length - 1 && (
+                    <div className={`w-24 h-1 ${
+                      currentStep > step.id ? 'bg-primary' : 'bg-muted'
+                    }`} />
+                  )}
+                </div>
+              ))}
+            </div>
 
-          {/* Step Content */}
+            <Progress value={(currentStep / TOKENIZATION_STEPS.length) * 100} />
+          </div>
+
           <Card>
-            <CardContent className="p-8">
+            <CardHeader>
+              <CardTitle>{TOKENIZATION_STEPS[currentStep - 1].title}</CardTitle>
+              <CardDescription>
+                {TOKENIZATION_STEPS[currentStep - 1].description}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
               {renderStepContent()}
             </CardContent>
           </Card>
 
-          {/* Navigation */}
           <div className="flex justify-between">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={prevStep}
               disabled={currentStep === 1}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Previous
+              Geri
             </Button>
-            
-            {currentStep < TOKENIZATION_STEPS.length ? (
-              <Button onClick={nextStep}>
-                Next
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
-            ) : (
-              <Button className="bg-green-600 hover:bg-green-700">
-                Deploy Token
-                <Coins className="h-4 w-4 ml-2" />
-              </Button>
-            )}
+            <Button
+              onClick={nextStep}
+              disabled={currentStep === TOKENIZATION_STEPS.length}
+            >
+              {currentStep === TOKENIZATION_STEPS.length ? 'Tamamla' : 'İleri'}
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
           </div>
         </div>
       </main>
