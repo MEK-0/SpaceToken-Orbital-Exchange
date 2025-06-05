@@ -96,6 +96,20 @@ npm start
 
 ---
 
+## 🔐 Deployment Configuration
+
+The deployment process requires a **Stellar public key** to interact with the Stellar blockchain network securely and transparently.
+
+This public key is used for:
+
+- ✅ **Token Issuance**: Minting and distributing tokenized representations of space assets  
+- 🔁 **Contract Invocation**: Calling smart contracts on the Stellar testnet for asset operations  
+- 🔒 **Transaction Validation**: Signing and verifying blockchain transactions tied to your deployment identity
+
+```env
+STELLAR_PUBLIC_KEY=GAAEZG5OXLICEE5FPFVUOPNQRMIRNADJ3MEZIBVTZQGM2H5AFX333TMH
+```
+
 ## 💡 Tokenization Process (Space Assets)
 1. **Satellite Details**: Enter basic satellite/project information (type, orbit, mission duration)
 2. **Technical Specs**: Add technical details (payload, sensors, communication)
