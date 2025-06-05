@@ -79,7 +79,7 @@ rwa-frontend/
 ### Installation
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone <https://github.com/MEK-0/SpaceToken-Orbital-Exchange.git>
 cd rwa-temp/rwa-frontend
 npm install
 
